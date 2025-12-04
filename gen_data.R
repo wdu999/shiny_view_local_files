@@ -2,34 +2,42 @@ library(tidyverse)
 
 set.seed(1)
 t1 <- tibble(
-  col1 = rep(c("A1", "B1"), each = 300),
-  col2 = rep(rep(c("X1", "Y1", "Z1"), each = 100), 2),
-  data = rnorm(600)
-)
+  t = 0,
+  test_name = "test_name",
+  test_id = "id_n",
+  group = "group_n",
+  index = rep(1:10, each = 5),
+  sweep_val = rep(1:5, 10),
+  sweep_par = "x",
+  unit = "v",
+  data = rep(1:5 + 2, 10),
+) |> mutate(data = data + rnorm(50, sd = 0.05))
 
 set.seed(2)
 t2 <- tibble(
-  col1 = rep(c("A2", "B2"), each = 300),
-  col2 = rep(rep(c("X2", "Y2", "Z2"), each = 100), 2),
-  data = rnorm(600)
-)
+  t = 33,
+  test_name = "test_name",
+  test_id = "id_n",
+  group = "group_n",
+  index = rep(1:10, each = 5),
+  sweep_val = rep(1:5, 10),
+  sweep_par = "x",
+  unit = "v",
+  data = rep(1:5 + 2, 10),
+) |> mutate(data = data + rnorm(50, sd = 0.05))
 
-ggplot(t1, aes(x = data)) +
-  geom_histogram() +
-  facet_grid(
-    rows = vars(col1),
-    cols = vars(col2),
-    scales = "free_y"
-  )
+t_data_test1 <- rbind(t1, t2) |>
+  mutate(ref = rep(t1$data, 2)) |>
+  mutate(delta = data - ref) |>
+  mutate(`%` = delta / ref * 100)
 
-ggplot(t2, aes(x = data)) +
-  geom_histogram() +
-  facet_grid(
-    rows = vars(col1),
-    cols = vars(col2),
-    scales = "free_y"
-  )
+t_data_test2 <- t_data_test1 |>
+  filter(sweep_val == 1) |>
+  mutate(sweep_val = NA, sweep_par = NA)
 
-write_tsv(t1, "data1.tsv")
+hist(t_data_test1$`%`)
 
-write_tsv(t2, "data2.tsv")
+write_tsv(t_data_test1, "data_test1.tsv")
+write_tsv(t_data_test2, "data_test2.tsv")
+
+
